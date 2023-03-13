@@ -95,6 +95,9 @@ void loop() {
     int isamp=0;
     //byte iskip=0;
     byte ichan=fchan;
+
+    byte max = 0; 
+    byte min = 0;;
   
     ADMUX =ADMUXBASE+ichan; // select first channel
     while ((ADCSRA &(1<<ADIF))==0); //wait till adc conversion is ready
@@ -115,6 +118,17 @@ void loop() {
       byte ynew=ADCH; 
       y[isamp]=ynew;
       lsb[isamp>>2]=(lsb[isamp>>2]>>2)+y_lsb;
+
+      for (int i=0; i<1200; i++) {
+        if (y[i] > max) {
+            max = y[i];
+          }
+          if (y[i] < min) {
+          min = y[i];
+          }
+      }
+
+      
             
       //check for trigger
       if(isamp>trig_offset and istop<0 and ichan==tchan){
@@ -131,7 +145,9 @@ void loop() {
           }
         }
       }
+      
       if (ichan==tchan) yprev=ynew;
+      
     
       isamp++; 
       if(isamp>=nsamp)isamp=0;
@@ -143,6 +159,7 @@ void loop() {
       //stop to check for commands after full cycle without trigger
       if(istop<0 and isamp==0)break;
     }
+    
     interrupts();
   
     //send the data to the PC
@@ -161,6 +178,6 @@ void loop() {
       }
     }
 
+  }
   }  
-}
 
